@@ -1,0 +1,24 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.10.xsd">
+
+    <!-- Changes for the User entity -->
+    <changeSet id="1" author="your_author_name">
+
+        <!-- Create the _users table -->
+        <createTable tableName="_users">
+            <column name="Id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="firstName" type="VARCHAR(255)"/>
+            <column name="lastName" type="VARCHAR(255)"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="isEnabled" type="BOOLEAN"/>
+
+        </createTable>
+
+    </changeSet>
+
+
+</databaseChangeLog>
