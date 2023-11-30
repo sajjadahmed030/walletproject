@@ -1,7 +1,8 @@
-package com.example.mywallet.Entities;
+package com.example.mywallet.entities;
 
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +10,7 @@ import lombok.Setter;
 @Table(name = "_users")
 @Getter
 @Setter
+
 public class User {
 
 
