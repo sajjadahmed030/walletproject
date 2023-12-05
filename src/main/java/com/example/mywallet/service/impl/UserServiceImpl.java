@@ -1,8 +1,11 @@
 package com.example.mywallet.service.impl;
 
 
+import com.example.mywallet.DTO.AuthenticationResponse;
+import com.example.mywallet.DTO.LoginDto;
 import com.example.mywallet.DTO.UserDto;
 import com.example.mywallet.entities.ConfirmationToken;
+import com.example.mywallet.entities.Role;
 import com.example.mywallet.entities.User;
 import com.example.mywallet.entities.Wallet;
 import com.example.mywallet.exceptions.Exception;
@@ -16,6 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -37,17 +43,26 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private Mapper mapper;
 
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    private  AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtServiceImpl jwtService;
+
     @Transactional
     public void saveUser(UserDto userDto)
     {
 //        UserDto savedUser=save(userDto);
         User user=mapper.Dto_To_User(userDto);
+        user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
+        user.setRole(Role.USER);
+        user.setEnabled(false);
         Wallet wallet=new Wallet();
         wallet.setUser(user);
         wallet.setBalance(1000);
         wallet.setAccountId(user.getLastName());
         user.setWallet(wallet);
-
         userRepo.save(user);
         ConfirmationToken confirmationToken=new ConfirmationToken(user);
         confirmationTokenRepo.save(confirmationToken);
@@ -61,8 +76,10 @@ public class UserServiceImpl implements UserService {
     public void confirmUser(String confirmationToken)
     {
         ConfirmationToken optionalToken=confirmationTokenRepo.findByConfirmationToken(confirmationToken).orElseThrow(()->new Exception("Illegal Token", HttpStatus.NOT_FOUND));
-        optionalToken.getUser().setEnabled(true);
-        save(mapper.USER_DTO(optionalToken.getUser()));
+        User user=optionalToken.getUser();
+        user.setEnabled(true);
+        userRepo.save(user);
+//        save(mapper.USER_DTO(optionalToken.getUser()));
     }
     @org.springframework.transaction.annotation.Transactional
     public UserDto save(UserDto userDto)
@@ -93,6 +110,24 @@ public class UserServiceImpl implements UserService {
             return userDto;
         }
         throw new Exception("User Not found by id:"+id,HttpStatus.NOT_FOUND);
+    }
+
+    @Override
+    public AuthenticationResponse authenticate(LoginDto loginDto) {
+        authenticationManager.authenticate(
+             new UsernamePasswordAuthenticationToken(
+                     loginDto.getEmail(),
+                     loginDto.getPassword()
+             )
+        );
+        var user=userRepo.findByEmail(loginDto.getEmail())
+                .orElseThrow(()->new Exception("Wrong credential",HttpStatus.BAD_REQUEST));
+
+        String Token=jwtService.generateToken(user);
+        return AuthenticationResponse
+                .builder()
+                .token(Token)
+                .build();
     }
 
 }

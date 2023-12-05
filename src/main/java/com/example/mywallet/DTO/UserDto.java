@@ -2,11 +2,15 @@ package com.example.mywallet.DTO;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserDto {
 
 
@@ -20,6 +24,7 @@ public class UserDto {
     private String lastName;
     @Email(message = "invalid email")
     private String email;
-    private boolean isEnabled;
+    @NotBlank(message = "missing password")
+    private String password;
 
 }

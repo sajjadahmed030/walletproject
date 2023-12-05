@@ -24,7 +24,7 @@ public class EmailServiceImpl implements EmailService {
         mailMessage.setSubject("Complete Registration!");
         mailMessage.setFrom("officesajjadahmed@gmail.com");
         mailMessage.setText("To confirm your account, please click here : "
-                +"http://localhost:8080/confirm-account?token="+confirmationToken);
+                +"http://localhost:8080/user/auth/confirm-account?token="+confirmationToken);
 
 
         javaMailSender.send(mailMessage);

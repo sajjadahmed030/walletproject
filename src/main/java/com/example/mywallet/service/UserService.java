@@ -1,5 +1,7 @@
 package com.example.mywallet.service;
 
+import com.example.mywallet.DTO.AuthenticationResponse;
+import com.example.mywallet.DTO.LoginDto;
 import com.example.mywallet.DTO.UserDto;
 import com.example.mywallet.entities.User;
 import org.springframework.stereotype.Service;
@@ -18,5 +20,5 @@ public interface UserService {
     public UserDto updateUser(Integer id,String firstname);
 
 
-
+    AuthenticationResponse authenticate(LoginDto loginDto);
 }

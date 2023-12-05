@@ -1,6 +1,7 @@
 package com.example.mywallet.service.impl;
 
 import com.example.mywallet.DTO.Receipt;
+import com.example.mywallet.entities.User;
 import com.example.mywallet.entities.Wallet;
 import com.example.mywallet.exceptions.Exception;
 import com.example.mywallet.mapper.Mapper;
@@ -10,6 +11,7 @@ import com.example.mywallet.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -23,9 +25,12 @@ public class WalletServiceImpl implements WalletService {
 
     @Autowired
     private  WalletRepo walletRepo;
+
+
     @Override
     public Receipt deposit(double amount) {
-        Optional<Wallet> wallet=walletRepo.findByUserLastName("Nakaam123");
+
+        Optional<Wallet> wallet=walletRepo.findByUserEmail(getUserName());
 
         if(wallet.isPresent())
         {
@@ -46,7 +51,7 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public Receipt withdraw(double amount) {
-        Optional<Wallet> wallet=walletRepo.findByUserLastName("Nakaam123");
+        Optional<Wallet> wallet=walletRepo.findByUserEmail(getUserName());
 
         if(wallet.isPresent())
         {
@@ -68,7 +73,7 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public Receipt checkBalance() {
-        Optional<Wallet> wallet=walletRepo.findByUserLastName("Nakaam123");
+        Optional<Wallet> wallet=walletRepo.findByUserEmail(getUserName());
 
         if(wallet.isPresent())
         {
@@ -79,5 +84,11 @@ public class WalletServiceImpl implements WalletService {
 
         }
         throw new Exception("No wallet found ", HttpStatus.NOT_FOUND);
+    }
+    public String getUserName()
+    {
+       User user= (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println(user.getUsername());
+       return getUserName();
     }
 }

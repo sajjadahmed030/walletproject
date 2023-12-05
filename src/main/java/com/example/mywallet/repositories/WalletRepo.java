@@ -8,6 +8,6 @@ import java.util.Optional;
 @Repository
 public interface WalletRepo extends JpaRepository<Wallet,Integer> {
 
-    Optional<Wallet> findByUserLastName(String lastName);
+    Optional<Wallet> findByUserEmail(String email);
 
 }
