@@ -19,6 +19,60 @@
         </createTable>
 
     </changeSet>
+    <changeSet id="10" author="your_author_name">
+
+        <!-- Add createdBy, createdAt, modifiedBy, modifiedAt columns to _users table -->
+        <addColumn tableName="_users">
+            <column name="createdBy" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <addColumn tableName="_users">
+            <column name="createdAt" type="TIMESTAMP"/>
+        </addColumn>
+
+        <addColumn tableName="_users">
+            <column name="modifiedBy" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <addColumn tableName="_users">
+            <column name="modifiedAt" type="TIMESTAMP"/>
+        </addColumn>
+
+    </changeSet>
+    <changeSet id="13" author="your_author_name">
+
+        <!-- Drop the createdBy column if it exists -->
+        <sql dbms="postgresql" splitStatements="true">
+            <![CDATA[
+            ALTER TABLE _users DROP COLUMN IF EXISTS createdBy;
+            ]]>
+        </sql>
+
+        <!-- Drop the createdAt column if it exists -->
+        <sql dbms="postgresql" splitStatements="true">
+            <![CDATA[
+            ALTER TABLE _users DROP COLUMN IF EXISTS createdAt;
+            ]]>
+        </sql>
+
+        <!-- Drop the modifiedBy column if it exists -->
+        <sql dbms="postgresql" splitStatements="true">
+            <![CDATA[
+            ALTER TABLE _users DROP COLUMN IF EXISTS modifiedBy;
+            ]]>
+        </sql>
+
+        <!-- Drop the modifiedAt column if it exists -->
+        <sql dbms="postgresql" splitStatements="true">
+            <![CDATA[
+            ALTER TABLE _users DROP COLUMN IF EXISTS modifiedAt;
+            ]]>
+        </sql>
+
+    </changeSet>
+
+    <!-- Similar changeSet for removing audit fields from token table -->
+
 
 
 </databaseChangeLog>

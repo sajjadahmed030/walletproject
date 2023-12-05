@@ -58,5 +58,60 @@
         </sql>
 
     </changeSet>
+    <changeSet id="11" author="your_author_name">
+
+        <!-- Add createdBy, createdAt, modifiedBy, modifiedAt columns to token table -->
+        <addColumn tableName="token">
+            <column name="createdBy" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <addColumn tableName="token">
+            <column name="createdAt" type="TIMESTAMP"/>
+        </addColumn>
+
+        <addColumn tableName="token">
+            <column name="modifiedBy" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <addColumn tableName="token">
+            <column name="modifiedAt" type="TIMESTAMP"/>
+        </addColumn>
+
+    </changeSet>
+    <changeSet id="14" author="your_author_name">
+
+        <!-- Drop the createdBy column if it exists -->
+        <sql dbms="postgresql" splitStatements="true">
+            <![CDATA[
+            ALTER TABLE token DROP COLUMN IF EXISTS createdBy;
+            ]]>
+        </sql>
+
+        <!-- Drop the createdAt column if it exists -->
+        <sql dbms="postgresql" splitStatements="true">
+            <![CDATA[
+            ALTER TABLE token DROP COLUMN IF EXISTS createdAt;
+            ]]>
+        </sql>
+
+        <!-- Drop the modifiedBy column if it exists -->
+        <sql dbms="postgresql" splitStatements="true">
+            <![CDATA[
+            ALTER TABLE token DROP COLUMN IF EXISTS modifiedBy;
+            ]]>
+        </sql>
+
+        <!-- Drop the modifiedAt column if it exists -->
+        <sql dbms="postgresql" splitStatements="true">
+            <![CDATA[
+            ALTER TABLE token DROP COLUMN IF EXISTS modifiedAt;
+            ]]>
+        </sql>
+
+    </changeSet>
+
+    <!-- Similar changeSet for removing audit fields from token table -->
+
+
 
 </databaseChangeLog>

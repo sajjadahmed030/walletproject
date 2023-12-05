@@ -1,0 +1,40 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.10.xsd">
+
+
+    <changeSet id="112308" author="your_author_name">
+
+        <!-- Drop the createdBy column if it exists -->
+        <dropColumn tableName="_users" columnName="createdBy"/>
+
+        <!-- Drop the createdAt column if it exists -->
+        <dropColumn tableName="_users" columnName="createdAt"/>
+
+        <!-- Drop the modifiedBy column if it exists -->
+        <dropColumn tableName="_users" columnName="modifiedBy"/>
+
+        <!-- Drop the modifiedAt column if it exists -->
+        <dropColumn tableName="_users" columnName="modifiedAt"/>
+
+    </changeSet>
+
+    <!-- ChangeSet for removing audit fields from token table -->
+    <changeSet id="112307" author="your_author_name">
+
+        <!-- Drop the createdBy column if it exists -->
+        <dropColumn tableName="token" columnName="createdBy"/>
+
+        <!-- Drop the createdAt column if it exists -->
+        <dropColumn tableName="token" columnName="createdAt"/>
+
+        <!-- Drop the modifiedBy column if it exists -->
+        <dropColumn tableName="token" columnName="modifiedBy"/>
+
+        <!-- Drop the modifiedAt column if it exists -->
+        <dropColumn tableName="token" columnName="modifiedAt"/>
+
+    </changeSet>
+
+</databaseChangeLog>

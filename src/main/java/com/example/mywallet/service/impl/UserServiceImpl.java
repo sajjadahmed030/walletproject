@@ -4,11 +4,13 @@ package com.example.mywallet.service.impl;
 import com.example.mywallet.DTO.UserDto;
 import com.example.mywallet.entities.ConfirmationToken;
 import com.example.mywallet.entities.User;
+import com.example.mywallet.entities.Wallet;
 import com.example.mywallet.exceptions.Exception;
 import com.example.mywallet.mapper.Mapper;
 import com.example.mywallet.repositories.ConfirmationTokenRepo;
 import com.example.mywallet.repositories.UserRepo;
 import com.example.mywallet.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.domain.Sort;
@@ -16,7 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -33,14 +37,22 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private Mapper mapper;
 
+    @Transactional
     public void saveUser(UserDto userDto)
     {
-        UserDto savedUser=save(userDto);
-        User user=mapper.Dto_To_User(savedUser);
+//        UserDto savedUser=save(userDto);
+        User user=mapper.Dto_To_User(userDto);
+        Wallet wallet=new Wallet();
+        wallet.setUser(user);
+        wallet.setBalance(1000);
+        wallet.setAccountId(user.getLastName());
+        user.setWallet(wallet);
+
+        userRepo.save(user);
         ConfirmationToken confirmationToken=new ConfirmationToken(user);
         confirmationTokenRepo.save(confirmationToken);
         SimpleMailMessage mailMessage=new SimpleMailMessage();
-        String email=savedUser.getEmail();
+        String email=user.getEmail();
         String Token=confirmationToken.getConfirmationToken();
         emailServiceImpl.sendEmail(mailMessage,email,Token);
 
@@ -50,18 +62,37 @@ public class UserServiceImpl implements UserService {
     {
         ConfirmationToken optionalToken=confirmationTokenRepo.findByConfirmationToken(confirmationToken).orElseThrow(()->new Exception("Illegal Token", HttpStatus.NOT_FOUND));
         optionalToken.getUser().setEnabled(true);
-        userRepo.save(optionalToken.getUser());
+        save(mapper.USER_DTO(optionalToken.getUser()));
     }
+    @org.springframework.transaction.annotation.Transactional
     public UserDto save(UserDto userDto)
     {
         User user=mapper.Dto_To_User(userDto);
+        user.setCreatedAt(new Date());
         user=userRepo.save(user);
         return mapper.USER_DTO(user);
     }
 
+
+    @org.springframework.transaction.annotation.Transactional(readOnly=true)
     public List<UserDto> getAllUsers(String sortingElement)
     {
         return mapper.USER_DTO_LIST(userRepo.findAll(Sort.by(sortingElement)));
+    }
+
+    @org.springframework.transaction.annotation.Transactional( rollbackFor = Exception.class)
+    @Override
+    public UserDto updateUser(Integer id, String firstname) {
+        Optional<User> user= userRepo.findById(id);
+        if(user.isPresent())
+        {
+            User userFromDb=user.get();
+            userFromDb.setFirstName(firstname);
+            UserDto userDto=mapper.USER_DTO(userFromDb);
+            UserDto savedUser=save(userDto);
+            return userDto;
+        }
+        throw new Exception("User Not found by id:"+id,HttpStatus.NOT_FOUND);
     }
 
 }

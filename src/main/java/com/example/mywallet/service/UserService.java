@@ -15,7 +15,7 @@ public interface UserService {
 
     public List<UserDto> getAllUsers(String sortingElement);
 
-
+    public UserDto updateUser(Integer id,String firstname);
 
 
 

@@ -11,7 +11,7 @@ import java.util.UUID;
 @Table(name = "Token")
 @Setter
 @Getter
-public class ConfirmationToken {
+public class ConfirmationToken extends AuditLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

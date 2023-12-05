@@ -4,5 +4,6 @@
 
     <include file="classpath:db/changelog/changes/token-v1.xml" relativeToChangelogFile="false" />
 
+    <include file="classpath:db/changelog/changes/commoneffect.xml" relativeToChangelogFile="false" />
 
 </databaseChangeLog>

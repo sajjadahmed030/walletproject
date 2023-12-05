@@ -38,13 +38,21 @@ public class UserController {
         return ResponseEntity.ok().body("User can login");
     }
     @GetMapping("/getallUser/{sortingElement}")
-    public ResponseEntity<List<User>> users(@PathVariable String sortingElement)
+    public ResponseEntity<List<UserDto>> users(@PathVariable String sortingElement)
     {
         System.out.println(sortingElement);
-        userService.getAllUsers(sortingElement);
+        List<UserDto> userDto=userService.getAllUsers(sortingElement);
 
-        return  ResponseEntity.ok().body(userRepo.findAll(Sort.by(sortingElement)));
+
+        return  ResponseEntity.ok().body(userDto);
     }
+    @PatchMapping("/update/{id}/{firstname}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Integer id,@PathVariable String firstname)
+    {
+        UserDto userDto=userService.updateUser( id,firstname);
 
+        return  ResponseEntity.ok().body(userDto);
+
+    }
 
 }
