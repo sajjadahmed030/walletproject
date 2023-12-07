@@ -3,7 +3,7 @@ package com.example.mywallet.mapper;
 import com.example.mywallet.DTO.Receipt;
 import com.example.mywallet.DTO.TokenDto;
 import com.example.mywallet.DTO.UserDto;
-import com.example.mywallet.entities.ConfirmationToken;
+import com.example.mywallet.entities.Token;
 import com.example.mywallet.entities.User;
 import com.example.mywallet.entities.Wallet;
 import org.mapstruct.Mapping;
@@ -18,7 +18,7 @@ public interface Mapper {
 
     User Dto_To_User(UserDto userDto);
 
-    TokenDto TOKEN_DTO(ConfirmationToken Token);
+    TokenDto TOKEN_DTO(Token Token);
 
     List<UserDto> USER_DTO_LIST(List<User> users);
 

@@ -19,6 +19,6 @@ public class Wallet extends AuditLog{
     private String accountId;
 
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id",referencedColumnName = "id")
+    @JoinColumn(name = "user_id",referencedColumnName = "Id")
     private User user;
 }

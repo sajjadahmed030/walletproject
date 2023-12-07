@@ -1,6 +1,5 @@
 package com.example.mywallet.service.impl;
 
-import com.example.mywallet.entities.ConfirmationToken;
 import com.example.mywallet.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;

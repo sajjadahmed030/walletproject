@@ -4,16 +4,14 @@ package com.example.mywallet.service.impl;
 import com.example.mywallet.DTO.AuthenticationResponse;
 import com.example.mywallet.DTO.LoginDto;
 import com.example.mywallet.DTO.UserDto;
-import com.example.mywallet.entities.ConfirmationToken;
-import com.example.mywallet.entities.Role;
-import com.example.mywallet.entities.User;
-import com.example.mywallet.entities.Wallet;
+import com.example.mywallet.entities.*;
 import com.example.mywallet.exceptions.Exception;
 import com.example.mywallet.mapper.Mapper;
-import com.example.mywallet.repositories.ConfirmationTokenRepo;
+import com.example.mywallet.repositories.TokenRepo;
 import com.example.mywallet.repositories.UserRepo;
 import com.example.mywallet.service.UserService;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.domain.Sort;
@@ -24,9 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -34,8 +30,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepo userRepo;
 
-    @Autowired
-    private ConfirmationTokenRepo confirmationTokenRepo;
 
     @Autowired
     private EmailServiceImpl emailServiceImpl;
@@ -49,36 +43,65 @@ public class UserServiceImpl implements UserService {
     private  AuthenticationManager authenticationManager;
     @Autowired
     private JwtServiceImpl jwtService;
+    @Autowired
+    private TokenRepo tokenRepo;
 
     @Transactional
     public void saveUser(UserDto userDto)
     {
 //        UserDto savedUser=save(userDto);
-        User user=mapper.Dto_To_User(userDto);
-        user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
-        user.setRole(Role.USER);
-        user.setEnabled(false);
-        Wallet wallet=new Wallet();
-        wallet.setUser(user);
-        wallet.setBalance(1000);
-        wallet.setAccountId(user.getLastName());
-        user.setWallet(wallet);
-        userRepo.save(user);
-        ConfirmationToken confirmationToken=new ConfirmationToken(user);
-        confirmationTokenRepo.save(confirmationToken);
-        SimpleMailMessage mailMessage=new SimpleMailMessage();
-        String email=user.getEmail();
-        String Token=confirmationToken.getConfirmationToken();
-        emailServiceImpl.sendEmail(mailMessage,email,Token);
+        Optional<User> optionalUser=userRepo.findByEmail(userDto.getEmail());
+
+            User user=mapper.Dto_To_User(userDto);
+            user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
+            user.setRole(Role.USER);
+            user.setEnabled(false);
+            Wallet wallet=new Wallet();
+            wallet.setUser(user);
+            wallet.setBalance(1000);
+            wallet.setAccountId(user.getLastName());
+            user.setWallet(wallet);
+            User savedUser=userRepo.save(user);
+            User UserDetails=User.builder()
+                    .email("activation"+savedUser.getEmail())
+                    .build();
+            var activationToken=jwtService.generateToken(UserDetails);
+            SimpleMailMessage mailMessage=new SimpleMailMessage();
+            String email=savedUser.getEmail();
+            emailServiceImpl.sendEmail(mailMessage,email,activationToken);
+            saveAuthToken(activationToken,savedUser,TokenType.ACTIVATION);
+            var jwtToken=jwtService.generateToken(savedUser);
+            saveAuthToken(jwtToken,savedUser,TokenType.BEARER);
 
 
     }
     public void confirmUser(String confirmationToken)
     {
-        ConfirmationToken optionalToken=confirmationTokenRepo.findByConfirmationToken(confirmationToken).orElseThrow(()->new Exception("Illegal Token", HttpStatus.NOT_FOUND));
-        User user=optionalToken.getUser();
+
+        System.out.println(confirmationToken);
+        String fakeEmail= jwtService.extractUsername(confirmationToken);
+        System.out.println(fakeEmail);
+        String realEmail=fakeEmail.substring(10);
+        System.out.println(realEmail);
+        var user= userRepo.findByEmail(realEmail).orElseThrow(() -> new Exception("Invalid token", HttpStatus.BAD_REQUEST));
+        List<Token> token=tokenRepo.findAllValidTokensByUser(user.getId());
+        if(token.isEmpty())
+        {
+            throw new Exception("Expired Token",HttpStatus.BAD_REQUEST);
+        }
+        Token token1=token.get(0);
+        if(token1.getToken().equals(confirmationToken))
+        {
+            token1.setExpired(true);
+            token1.setRevoked(true);
+            tokenRepo.save(token1);
+        }
         user.setEnabled(true);
         userRepo.save(user);
+//        ConfirmationToken optionalToken=confirmationTokenRepo.findByConfirmationToken(confirmationToken).orElseThrow(()->new Exception("Illegal Token", HttpStatus.NOT_FOUND));
+//        User user=optionalToken.getUser();
+//        user.setEnabled(true);
+//        userRepo.save(user);
 //        save(mapper.USER_DTO(optionalToken.getUser()));
     }
     @org.springframework.transaction.annotation.Transactional
@@ -124,10 +147,37 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(()->new Exception("Wrong credential",HttpStatus.BAD_REQUEST));
 
         String Token=jwtService.generateToken(user);
+        revokeAllUserToken(user);
+        saveAuthToken(Token,user,TokenType.BEARER);
         return AuthenticationResponse
                 .builder()
                 .token(Token)
                 .build();
+
+    }
+    public void saveAuthToken(String token,User user,TokenType tokenType)
+    {
+        Token authenticationToken= Token.builder()
+                .token(token)
+                .user(user)
+                .tokenType(tokenType)
+                .expired(false)
+                .revoked(false)
+                .build();
+        tokenRepo.save(authenticationToken);
+    }
+    private void revokeAllUserToken(User user)
+    {
+        var validToken=tokenRepo.findAllValidTokensByUser(user.getId());
+        if(validToken.isEmpty())
+        {
+            return;
+        }
+        validToken.forEach(t->{
+            t.setExpired(true);
+            t.setRevoked(true);
+        });
+       tokenRepo.saveAll(validToken);
     }
 
 }

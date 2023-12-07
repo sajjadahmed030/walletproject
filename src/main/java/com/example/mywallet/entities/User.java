@@ -2,9 +2,7 @@ package com.example.mywallet.entities;
 
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,7 +15,9 @@ import java.util.List;
 @Table(name = "_users")
 @Getter
 @Setter
-
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User extends AuditLog implements UserDetails {
 
     @jakarta.persistence.Id
@@ -34,6 +34,11 @@ public class User extends AuditLog implements UserDetails {
     private String password;
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Wallet wallet;
+
+
+
+    @OneToMany(mappedBy = "user",targetEntity = Token.class)
+    private List<Token> tokens;
 
 
     @Override
