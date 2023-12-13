@@ -19,7 +19,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -50,12 +53,15 @@ public class UserServiceImpl implements UserService {
     public void saveUser(UserDto userDto)
     {
 //        UserDto savedUser=save(userDto);
-        Optional<User> optionalUser=userRepo.findByEmail(userDto.getEmail());
+        var optionalUser=userRepo.findByEmail(userDto.getEmail());
+        if(optionalUser.isPresent()){
+            throw  new Exception("account with given email already exist",HttpStatus.BAD_REQUEST);
+        }
 
             User user=mapper.Dto_To_User(userDto);
             user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
             user.setRole(Role.USER);
-            user.setEnabled(false);
+            user.setEnabled(true);//todo make true to false to male email work
             Wallet wallet=new Wallet();
             wallet.setUser(user);
             wallet.setBalance(1000);
@@ -73,6 +79,27 @@ public class UserServiceImpl implements UserService {
             var jwtToken=jwtService.generateToken(savedUser);
             saveAuthToken(jwtToken,savedUser,TokenType.BEARER);
 
+
+    }
+    @Override
+    public AuthenticationResponse authenticate(LoginDto loginDto) {
+        Authentication authentication =  authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginDto.getEmail(),
+                        loginDto.getPassword()
+                )
+        );
+        var user=userRepo.findByEmail(loginDto.getEmail())
+                .orElseThrow(()->new Exception("Wrong credential",HttpStatus.BAD_REQUEST));
+
+        String Token=jwtService.generateToken(user);
+        revokeAllUserToken(user);
+        saveAuthToken(Token,user,TokenType.BEARER);
+
+        return AuthenticationResponse
+                .builder()
+                .token(Token)
+                .build();
 
     }
     public void confirmUser(String confirmationToken)
@@ -135,26 +162,8 @@ public class UserServiceImpl implements UserService {
         throw new Exception("User Not found by id:"+id,HttpStatus.NOT_FOUND);
     }
 
-    @Override
-    public AuthenticationResponse authenticate(LoginDto loginDto) {
-        authenticationManager.authenticate(
-             new UsernamePasswordAuthenticationToken(
-                     loginDto.getEmail(),
-                     loginDto.getPassword()
-             )
-        );
-        var user=userRepo.findByEmail(loginDto.getEmail())
-                .orElseThrow(()->new Exception("Wrong credential",HttpStatus.BAD_REQUEST));
 
-        String Token=jwtService.generateToken(user);
-        revokeAllUserToken(user);
-        saveAuthToken(Token,user,TokenType.BEARER);
-        return AuthenticationResponse
-                .builder()
-                .token(Token)
-                .build();
 
-    }
     public void saveAuthToken(String token,User user,TokenType tokenType)
     {
         Token authenticationToken= Token.builder()

@@ -26,6 +26,7 @@ public class User extends AuditLog implements UserDetails {
     private String firstName;
 
     private String lastName;
+    @Column(unique = true)
     private String email;
     private boolean isEnabled;
     @Enumerated(EnumType.STRING)

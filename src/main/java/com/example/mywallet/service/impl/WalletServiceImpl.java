@@ -73,11 +73,15 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public Receipt checkBalance() {
+
+        System.out.println("CheckBALANCED IS called");
         Optional<Wallet> wallet=walletRepo.findByUserEmail(getUserName());
 
         if(wallet.isPresent())
         {
+
             Wallet wallet1= wallet.get();
+            System.out.println(wallet1.toString());
             Receipt receipt= mapper.walletToReceipt(wallet1);
             receipt.setTitle("Total Balance");
             return receipt;
@@ -89,6 +93,7 @@ public class WalletServiceImpl implements WalletService {
     {
        User user= (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         System.out.println(user.getUsername());
-       return getUserName();
+        System.out.println(user.getEmail());
+       return user.getUsername();
     }
 }

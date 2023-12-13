@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Token {
+public class Token extends AuditLog{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;

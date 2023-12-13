@@ -1,13 +1,13 @@
 package com.example.mywallet.entities;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Table(name = "wallet")
-@Getter
-@Setter
+@Data
 public class Wallet extends AuditLog{
 
     @Id

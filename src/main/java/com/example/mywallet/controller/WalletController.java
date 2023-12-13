@@ -16,6 +16,7 @@ public class WalletController {
     @PostMapping("/deposit/{amount}")
     public ResponseEntity<Receipt> deposit(@PathVariable double amount)
     {
+        System.out.println("inside deposit");
         Receipt receipt=walletService.deposit(amount);
         return ResponseEntity.ok().body(receipt);
     }
@@ -28,6 +29,7 @@ public class WalletController {
     @GetMapping("/checkbalance")
     public ResponseEntity<Receipt> checkbalance()
     {
+        System.out.println("Inside Check Balance");
         Receipt receipt=walletService.checkBalance();
         return ResponseEntity.ok().body(receipt);
     }
